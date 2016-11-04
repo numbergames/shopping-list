@@ -80,17 +80,10 @@ $(document).ready(function () {
     // });
 
     $('.shopping-item-delete').click(function(event) {
-        console.log('...inside delete listener...');
+        var itemToDelete = $(event.target).closest('li').find('.shopping-item').text();
 
-        var itemToDelete = $(event.target).closest('span');
-
-        console.log(event.target);
-        console.log(event.currentTarget);
-        debugger;
-
-
-        deleteItem(state, itemToDelete );
-        renderList(state, $('.shopping-list') /*fdsfasd*/);
+        deleteItem(state, itemToDelete);
+        renderList(state, $('.shopping-list'));
     });
 
 
