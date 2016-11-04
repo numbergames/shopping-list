@@ -75,6 +75,8 @@ $(document).ready(function () {
         });
 
         element.html(itemsHTML);
+        // re-attach listeners
+        attachbuttonListeners();   
     };
 
 
@@ -85,23 +87,29 @@ $(document).ready(function () {
         var newItem = $('#shopping-list-entry').val();
         addItem(state, newItem);
         renderList(state, $('.shopping-list'));
+
+        event.target.reset();
     });
 
-    $('.shopping-item-toggle').click(function(event) {
-            
-        var itemToToggle = $(event.target).closest('li').find('.shopping-item').text();
+    function attachbuttonListeners() {
+        $('.shopping-item-toggle').click(function(event) {
+                
+            var itemToToggle = $(event.target).closest('li').find('.shopping-item').text();
 
-        toggleCheck(state, itemToToggle);
-        renderList(state, $('.shopping-list'));
-    });
+            toggleCheck(state, itemToToggle);
+            renderList(state, $('.shopping-list'));
+        });
 
-    $('.shopping-item-delete').click(function(event) {
-        var itemToDelete = $(event.target).closest('li').find('.shopping-item').text();
+        $('.shopping-item-delete').click(function(event) {
+            var itemToDelete = $(event.target).closest('li').find('.shopping-item').text();
 
-        deleteItem(state, itemToDelete);
-        renderList(state, $('.shopping-list'));
-    });
+            deleteItem(state, itemToDelete);
+            renderList(state, $('.shopping-list'));
+        });
+    }
 
+    // first attachment
+    attachbuttonListeners();
 
     // Final output goal:
     // The user being able to create a shopping list and edit and update the shopping list
