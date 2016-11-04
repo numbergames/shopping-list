@@ -5,7 +5,7 @@ $(document).ready(function () {
     // What is contained in the state object:
     // - item name
 
-    // var initialItems = [apples, organges, etc./]
+    // FYI: state.items[0].name === 'apples'
     var state = {
         items: [
             {name: "apples", checked: false},
@@ -15,8 +15,8 @@ $(document).ready(function () {
         ]
     };
 
-
     // 2.  Functions that modify the state object
+
     function addItem(state, item){
         var newItem = {name: item, checked:false};
         state.items.push(newItem);
@@ -24,20 +24,30 @@ $(document).ready(function () {
         return state;
     }
 
+    function findItemIndex(state, item) {
+        return state.items.findIndex(function (element) {
+            return element.name === item;
+        });
+    }
 
-    // function toggleItemCheck(state, item) {
-    //     // - check / uncheck
-    //     // state.items[index of item].checked = toggle true/false
-    //     return state;
-    // }
 
+    function toggleCheck(state, item) {
+        var toggleIndex = findItemIndex(state, item);
+
+        // - check / uncheck
+        state.items[toggleIndex].checked = state.items[toggleIndex].checked 
+            ? false
+            : true;
+
+        console.log(state.items[toggleIndex].checked);
+
+        return state;
+    }
 
     function deleteItem(state, item){
-        console.log('deleteItem item parameter: ', item);
+        var deleteIndex = findItemIndex(state, item);
 
-        // array.splice(*where to start deleting*, how many elements to delete = 1)
-
-
+        state.items.splice(deleteIndex, 1);
 
         return state;
     }
@@ -52,11 +62,14 @@ $(document).ready(function () {
     function renderList(state, element) {
         
         var itemsHTML = state.items.map(function(item) {
+            var toggleClass = item.checked ? ' shopping-item__checked' : '';
             
-            var thisItem = '<li><span class="shopping-item">' + item.name + '</span>' + 
-            '<div class="shopping-item-controls"><button class="shopping-item-toggle">'+
+            var thisItem = '<li><span class="shopping-item ' + toggleClass + '">' + item.name + 
+            '</span><div class="shopping-item-controls"><button class="shopping-item-toggle">'+
             '<span class="button-label">check</span></button>\n<button class="shopping-item-delete">'+
             '<span class="button-label">delete</span></button></div></li>';
+
+            console.log(thisItem);
 
             return thisItem;
         });
@@ -74,10 +87,13 @@ $(document).ready(function () {
         renderList(state, $('.shopping-list'));
     });
 
-    // $('.shopping-item-toggle').click(function(event) {
-    //     toggleItemCheck(state, $(event.currentTarget).text() );
-    //     renderList(state, $('.shopping-list'));
-    // });
+    $('.shopping-item-toggle').click(function(event) {
+            
+        var itemToToggle = $(event.target).closest('li').find('.shopping-item').text();
+
+        toggleCheck(state, itemToToggle);
+        renderList(state, $('.shopping-list'));
+    });
 
     $('.shopping-item-delete').click(function(event) {
         var itemToDelete = $(event.target).closest('li').find('.shopping-item').text();
