@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-  // 1.  The state object
+  // 1.  The state object & methods
   var state = {
     items: [
       {name: "apples", checked: false},
@@ -11,88 +11,82 @@ $(document).ready(function () {
 
     itemIndex: function (itemName) {
       return this.items.findIndex(element => element.name === itemName)
+    },
+
+    addItem: function (itemName) {
+      var newItem = {name: itemName, checked: false};
+  
+      this.items.push(newItem);
+    },
+
+    toggleItem: function (itemName) {
+      var index = this.itemIndex(itemName);
+
+      this.items[index].checked = state.items[index].checked 
+        ? false
+        : true;
+    },
+
+    deleteItem: function (itemName) {
+      var index = this.itemIndex(itemName);
+
+      this.items.splice(index, 1);
+    },
+
+    generateList: function () {
+      var itemsHTML = this.items.map(function(item) {
+        var toggleClass = item.checked 
+          ? ' shopping-item__checked' 
+          : '';
+
+        return '<li>' + 
+                '<span class="shopping-item' + toggleClass + '">' + 
+                  item.name + '</span>' + 
+                '<div class="shopping-item-controls">' + 
+                  '<button class="shopping-item-toggle">' +
+                    '<span class="button-label">check</span>' + 
+                  '</button>\n' + 
+                  '<button class="shopping-item-delete">' +
+                    '<span class="button-label">delete</span>' +
+                    '</button>' +
+                '</div>' +
+              '</li>';
+      });
+
+      return itemsHTML;
     }
   };
 
-  // 2.  Functions that modify state
-  function addItem(state, item){
-    var newItem = {name: item, checked: false};
-  
-    state.items.push(newItem);
-  }
-
-  function toggleItem(state, item) {
-    // var index = itemIndex(state, item);
-    var index = state.itemIndex(item);
-
-    state.items[index].checked = state.items[index].checked 
-      ? false
-      : true;
-  }
-
-  function deleteItem(state, item){
-    var index = state.itemIndex(item);
-
-    state.items.splice(index, 1);
-  }
-
-  // 3.  Functions that generate state
-  function generateList(state, element) {
-
-    var itemsHTML = state.items.map(function(item) {
-      var toggleClass = item.checked 
-        ? ' shopping-item__checked' 
-        : '';
-
-      var thisItem = 
-        '<li>' + 
-          '<span class="shopping-item' + toggleClass + '">' + 
-            item.name + '</span>' + 
-          '<div class="shopping-item-controls">' + 
-            '<button class="shopping-item-toggle">' +
-              '<span class="button-label">check</span>' + 
-            '</button>\n' + 
-            '<button class="shopping-item-delete">' +
-              '<span class="button-label">delete</span>' +
-              '</button>' +
-          '</div>' +
-        '</li>';
-
-      return thisItem;
-    });
-
-    return itemsHTML;
-  };
-
-  // 4.  Event listeners that trigger the previous functions
+  // Event listeners that trigger the previous functions
   $('#js-shopping-list-form').submit(function(event) {
     event.preventDefault();
 
     var newItem = $('#shopping-list-entry').val();
 
-    if (!newItem.length) { // don't add empty items
-      return;
+    if (newItem.length) { // ignore if blank
+      state.addItem(newItem);
+      $('.shopping-list').html(state.generateList());
+      event.target.reset();
     }
-
-    addItem(state, newItem);
-    $('.shopping-list').html(generateList(state));
-    event.target.reset();
   });
 
-  // Attached to the parent preventing overwriting on render
+  // Attached to the parent preventing overwrite on render
   $('.shopping-list')
+
     .on('click', '.shopping-item-toggle', function(event) {
       var itemToToggle = $(event.target).closest('li')
         .find('.shopping-item').text();
 
-      toggleItem(state, itemToToggle);
-      $('.shopping-list').html(generateList(state));
+      state.toggleItem(itemToToggle);
+      $('.shopping-list').html(state.generateList());
     })
+
     .on('click', '.shopping-item-delete', function(event) {
       var itemToDelete = $(event.target).closest('li')
         .find('.shopping-item').text();
 
-      deleteItem(state, itemToDelete);
-      $('.shopping-list').html(generateList(state));
+      state.deleteItem(itemToDelete);
+      $('.shopping-list').html(state.generateList());
     });
+
 });
