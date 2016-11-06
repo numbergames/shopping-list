@@ -1,128 +1,98 @@
 $(document).ready(function () {
-    // Pseudocode:
 
-    // 1.  Create state object
-    // What is contained in the state object:
-    // - item name
+  // 1.  The state object
+  var state = {
+    items: [
+      {name: "apples", checked: false},
+      {name: "oranges", checked: false},
+      {name: "milk", checked: true},
+      {name: "bread", checked: false}
+    ],
 
-    // FYI: state.items[0].name === 'apples'
-    var state = {
-        items: [
-            {name: "apples", checked: false},
-            {name: "oranges", checked: false},
-            {name: "milk", checked: true},
-            {name: "bread", checked: false}
-        ]
-    };
-
-    // 2.  Functions that modify the state object
-
-    function addItem(state, item){
-        var newItem = {name: item, checked:false};
-        state.items.push(newItem);
-
-        return state;
+    itemIndex: function (itemName) {
+      return this.items.findIndex(element => element.name === itemName)
     }
+  };
 
-    function findItemIndex(state, item) {
-        return state.items.findIndex(function (element) {
-            return element.name === item;
-        });
-    }
+  // 2.  Functions that modify state
+  function addItem(state, item){
+    var newItem = {name: item, checked: false};
+  
+    state.items.push(newItem);
+  }
 
+  function toggleItem(state, item) {
+    // var index = itemIndex(state, item);
+    var index = state.itemIndex(item);
 
-    function toggleCheck(state, item) {
-        var toggleIndex = findItemIndex(state, item);
+    state.items[index].checked = state.items[index].checked 
+      ? false
+      : true;
+  }
 
-        // - check / uncheck
-        state.items[toggleIndex].checked = state.items[toggleIndex].checked 
-            ? false
-            : true;
+  function deleteItem(state, item){
+    var index = state.itemIndex(item);
 
-        console.log(state.items[toggleIndex].checked);
+    state.items.splice(index, 1);
+  }
 
-        return state;
-    }
+  // 3.  Functions that generate state
+  function generateList(state, element) {
 
-    function deleteItem(state, item){
-        var deleteIndex = findItemIndex(state, item);
+    var itemsHTML = state.items.map(function(item) {
+      var toggleClass = item.checked 
+        ? ' shopping-item__checked' 
+        : '';
 
-        state.items.splice(deleteIndex, 1);
+      var thisItem = 
+        '<li>' + 
+          '<span class="shopping-item' + toggleClass + '">' + 
+            item.name + '</span>' + 
+          '<div class="shopping-item-controls">' + 
+            '<button class="shopping-item-toggle">' +
+              '<span class="button-label">check</span>' + 
+            '</button>\n' + 
+            '<button class="shopping-item-delete">' +
+              '<span class="button-label">delete</span>' +
+              '</button>' +
+          '</div>' +
+        '</li>';
 
-        return state;
-    }
-
-
-    // 3.  Functions that render the state
-    //  -- jQuery methods that updates the DOM
-    // pass in pointer to the 'shopping-list'
-
-
-    //<li id="apples">apples</li>
-    function renderList(state, element) {
-        
-        var itemsHTML = state.items.map(function(item) {
-            var toggleClass = item.checked ? ' shopping-item__checked' : '';
-            
-            var thisItem = '<li><span class="shopping-item ' + toggleClass + '">' + item.name + 
-            '</span><div class="shopping-item-controls"><button class="shopping-item-toggle">'+
-            '<span class="button-label">check</span></button>\n<button class="shopping-item-delete">'+
-            '<span class="button-label">delete</span></button></div></li>';
-
-            console.log(thisItem);
-
-            return thisItem;
-        });
-
-        element.html(itemsHTML);
-        // re-attach listeners
-        attachbuttonListeners();   
-    };
-
-
-    // 4.  Event listeners that trigger the previous functions
-
-    $('#js-shopping-list-form').submit(function(event) {
-        event.preventDefault();
-        var newItem = $('#shopping-list-entry').val();
-        addItem(state, newItem);
-        renderList(state, $('.shopping-list'));
-
-        event.target.reset();
+      return thisItem;
     });
 
-    function attachbuttonListeners() {
-        $('.shopping-item-toggle').click(function(event) {
-                
-            var itemToToggle = $(event.target).closest('li').find('.shopping-item').text();
+    return itemsHTML;
+  };
 
-            toggleCheck(state, itemToToggle);
-            renderList(state, $('.shopping-list'));
-        });
+  // 4.  Event listeners that trigger the previous functions
+  $('#js-shopping-list-form').submit(function(event) {
+    event.preventDefault();
 
-        $('.shopping-item-delete').click(function(event) {
-            var itemToDelete = $(event.target).closest('li').find('.shopping-item').text();
+    var newItem = $('#shopping-list-entry').val();
 
-            deleteItem(state, itemToDelete);
-            renderList(state, $('.shopping-list'));
-        });
+    if (!newItem.length) { // don't add empty items
+      return;
     }
 
-    // first attachment
-    attachbuttonListeners();
+    addItem(state, newItem);
+    $('.shopping-list').html(generateList(state));
+    event.target.reset();
+  });
 
-    // Final output goal:
-    // The user being able to create a shopping list and edit and update the shopping list
-    // -- when user submits a new item, it's added to the list
-    // -- when user takes an action on an item, it's reflected on the list
-  
+  // Attached to the parent preventing overwriting on render
+  $('.shopping-list')
+    .on('click', '.shopping-item-toggle', function(event) {
+      var itemToToggle = $(event.target).closest('li')
+        .find('.shopping-item').text();
 
+      toggleItem(state, itemToToggle);
+      $('.shopping-list').html(generateList(state));
+    })
+    .on('click', '.shopping-item-delete', function(event) {
+      var itemToDelete = $(event.target).closest('li')
+        .find('.shopping-item').text();
+
+      deleteItem(state, itemToDelete);
+      $('.shopping-list').html(generateList(state));
+    });
 });
-
-
-
-
-
-
-
-
